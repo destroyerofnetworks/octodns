@@ -1295,7 +1295,7 @@ class Manager(object):
                 plan = Plan(zone, zone, [], False)
             target.apply(plan)
 
-    def validate_configs(self, lenient=False):
+    def validate_configs(self, lenient=False, suppress_lenient_warnings=False):
         # TODO: this code can probably be shared with stuff in sync
 
         zones = self.config['zones']
@@ -1344,12 +1344,15 @@ class Manager(object):
                     f'Zone {decoded_zone_name}, unknown source: ' + source
                 )
 
-            lenient = lenient or config.get('lenient', False)
+            zone_lenient = lenient or config.get('lenient', False)
             for source in sources:
                 if isinstance(source, YamlProvider):
-                    source.populate(zone, lenient=lenient)
+                    source.populate(zone, lenient=zone_lenient)
 
-            zone.validate(lenient=lenient)
+            zone.validate(
+                lenient=zone_lenient,
+                suppress_lenient_warnings=suppress_lenient_warnings,
+            )
 
             # check that processors are in order if any are specified
             processors = config.get('processors') or []
